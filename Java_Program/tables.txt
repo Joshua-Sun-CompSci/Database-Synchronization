@@ -1,0 +1,4 @@
+// put all tables you want to compare down here
+// comments are allowed on this page and will not be used for comparison
+JY_BASE_ACCOUNT
+JY_BASE_LOGIN_LOG
