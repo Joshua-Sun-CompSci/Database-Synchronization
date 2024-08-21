@@ -2,7 +2,7 @@
 CLASSPATH = .:/usr/local/oracle/instantclient_21_3/ojdbc8.jar
 
 # Define the source files
-SOURCES = FetchData.java SaveData.java CompareData.java
+SOURCES = FetchData.java SaveData.java ModifyTable.java CompareData.java
 
 # Define the class files that will be generated from the source files
 CLASSES = $(SOURCES:.java=.class)

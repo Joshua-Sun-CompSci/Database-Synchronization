@@ -1,4 +1,3 @@
-package week1;
 import java.sql.*;
 import java.util.*;
 
@@ -7,35 +6,46 @@ public class FetchData {
     // private static final String username = "wanet_666";
     // private static final String password = "666666";
 
-    public static Map<String, String> fetchTableStructure(Connection connection, String tableName) throws SQLException {
-        Map<String, String> tableStructure = new HashMap<>();
+    public static Map<String, Map<String, Object>> fetchTableStructure(Connection connection, String tableName) throws SQLException {
+        Map<String, Map<String, Object>> tableStructure = new HashMap<>();
         DatabaseMetaData metaData = connection.getMetaData();
         
-        // gets all data from one specific table
         try (ResultSet columns = metaData.getColumns(null, null, tableName, null)) {
             while (columns.next()) {
 
-                // stores <name, type>
-                tableStructure.put(columns.getString("COLUMN_NAME"), columns.getString("TYPE_NAME"));
+                // gets all necessary data from a column
+                // Check is not implemented yet. I will figure it out soon(hopefully)
+                String columnName = columns.getString("COLUMN_NAME");
+                String typeName = columns.getString("TYPE_NAME");
+                int columnSize = columns.getInt("COLUMN_SIZE");
+                int decimalDigits = columns.getInt("DECIMAL_DIGITS");
+                
+                // save detailed data
+                Map<String, Object> columnDetails = new HashMap<>();
+                columnDetails.put("TYPE_NAME", typeName);
+                columnDetails.put("COLUMN_SIZE", columnSize);
+                columnDetails.put("DECIMAL_DIGITS", decimalDigits);
+    
+                tableStructure.put(columnName, columnDetails);
             }
         }
-
+    
         return tableStructure;
     }
 
-    public static String fetchPrimaryKey(Connection connection, String tableName) throws SQLException {
+    public static HashSet<String> fetchPrimaryKeys(Connection connection, String tableName) throws SQLException {
+        HashSet<String> primaryKeysSet = new HashSet<>();
         DatabaseMetaData metaData = connection.getMetaData();
-
+    
         try (ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
-            if (primaryKeys.next()) {
-
-                // Fetch the primary key column name
-                return primaryKeys.getString("COLUMN_NAME");
-            } else {
-                
-                // No primary key found for the table
-                return null;
+            while (primaryKeys.next()) {
+                // Fetch the primary key column name and add it to the set
+                String columnName = primaryKeys.getString("COLUMN_NAME");
+                primaryKeysSet.add(columnName);
             }
         }
+    
+        // Return the set of primary key column names
+        return primaryKeysSet;
     }
 }

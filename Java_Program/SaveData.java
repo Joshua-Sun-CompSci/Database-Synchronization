@@ -1,4 +1,3 @@
-package week1;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
@@ -15,9 +14,9 @@ public class SaveData {
 
             // loop through all tables
             for (String tableName : tableNames) {
-                Map<String, String> table = FetchData.fetchTableStructure(connection, tableName);
-                String PK = FetchData.fetchPrimaryKey(connection, tableName);
-                saveTable(PK, table, saveAs); // write table to saveAs
+                Map<String, Map<String, Object>> table = FetchData.fetchTableStructure(connection, tableName);
+                HashSet<String> PKs = FetchData.fetchPrimaryKeys(connection, tableName);
+                saveTable(PKs, table, tableName, saveAs); // write table to saveAs
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -35,27 +34,33 @@ public class SaveData {
     }
 
     // this write the content of the table to saveAs
-    private static void saveTable(String PK, Map<String, String> table, String saveAs){
-
-        // saves all <name, type> from a table to saveAs
+    private static void saveTable(HashSet<String> PKs, Map<String, Map<String, Object>> table, String tableName, String saveAs) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(saveAs, true))) {
-
-            // if everything is null, the table DNE
-            if (PK == null && table.isEmpty()){
+            if (PKs.isEmpty() && table.isEmpty()) {
                 writer.write("Table DNE\n\n");
                 return;
-            }
-            writer.write("Primary Key: " + PK + "\n");
-
-            // for each pair values in the table, write it to saveAs
-            for (Map.Entry<String, String> pair : table.entrySet()) {
-                String name = pair.getKey();
-                String type = pair.getValue();
-                writer.write("\t" + name + ": " + type + "\n");
+            } else {
+                writer.write("Table Name: " + tableName + "\n");
             }
 
-            // Add a blank line between tables
+            // starts to write all PKs to file
+            writer.write("Primary Key(s): ");
+            for (String PK: PKs){
+                writer.write(PK + " ");
+            }
+            writer.write("\n"); // done writing all PKs
+            
+            // starts to write details to file
+            for (Map.Entry<String, Map<String, Object>> columnEntry : table.entrySet()) {
+                String name = columnEntry.getKey();
+                Map<String, Object> details = columnEntry.getValue();
+                writer.write("COLUMN_NAME: " + name + ", ");
+                writer.write("TYPE_NAME: " + details.get("TYPE_NAME") + ", ");
+                writer.write("COLUMN_SIZE: " + details.get("COLUMN_SIZE") + ", ");
+                writer.write("DECIMAL_DIGITS: " + details.get("DECIMAL_DIGITS") + "\n");
+            }
             writer.write("\n");
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

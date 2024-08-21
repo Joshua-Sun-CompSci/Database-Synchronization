@@ -1,11 +1,10 @@
-package week1;
 import java.io.*;
 import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
 
 public class CompareData {
-    public static void main(String[] args) {
+    public static void main(String[] args) { 
 
         // initialize them just incase of invalid input
         String url = "";
@@ -57,37 +56,48 @@ public class CompareData {
                 // get the content of each benchmark Tables
                 String benchmarkString = benchmarkTables[i];
 
-                // if table DNE in the benchmark database, delete the table from the target database
-                if (benchmarkString.equals("Table DNE")){
-                    System.out.println("Warning: Table name \"" + tableName + "\" does not exist in the benchmark database.");
-                    ModifyTable.deleteTable(tableName, url, username, password);
+                // for each table exists in benchmark DB, fetch PK and the content within each table
+                HashSet<String> targetPKs = FetchData.fetchPrimaryKeys(connection, tableName);
+                Map<String, Map<String, Object>> targetTable = FetchData.fetchTableStructure(connection, tableName);
+                
+                // if table DNE in both benchmark and target database, print the message to warn the user
+                if (benchmarkString.equals("Table DNE") && targetPKs.isEmpty() && targetTable.isEmpty()){
+                    System.out.println("Warning: Table \"" + tableName + "\" does not exist in either database.");
+                    System.out.println("Done checking table " + tableName + ".\n");
+                    continue;
+                } else if (benchmarkString.equals("Table DNE")){ // else if table DNE in the benchmark database, delete the table from the target database
+                    System.out.println("Warning: Table \"" + tableName + "\" does not exist in the benchmark database.");
+                    ModifyTable.dropTable(tableName, url, username, password);
                     System.out.println("Done checking table " + tableName + ".\n");
                     continue;
                 }
-
-                // for each table exists in benchmark DB, fetch PK and the content within each table
-                String targetPK = FetchData.fetchPrimaryKey(connection, tableName);
-                Map<String, String> targetTable = FetchData.fetchTableStructure(connection, tableName);
-
-                String[] benchmarkStringArray = benchmarkString.split("\n");
                 
-                Map<String, String> benchmarkTable = parseFields(benchmarkStringArray);
-                String benchmarkPK = benchmarkTable.get("Primary Key");
+                String[] benchmarkArray = benchmarkString.split("\n");
+                String benchmarkPKString = benchmarkArray[1];
+                String[] benchmarkPKArray = benchmarkPKString.split("\\s+");
 
-                // remove the primary key to have the same structure as the targetTable
-                benchmarkTable.remove("Primary Key");
+                // filters out "Primary Keys: " and only saves what's after it
+                HashSet<String> benchmarkPKs = new HashSet<>();
+                for (int j = 2; j < benchmarkPKArray.length; j++) {
+                    String key = benchmarkPKArray[j].trim();
+                    benchmarkPKs.add(key);
+                }
+                
+                // this deletes the first&second element (the name of the table and PK)
+                String[] benchmarkStringArray = Arrays.copyOfRange(benchmarkArray, 2, benchmarkArray.length);
+                Map<String, Map<String, Object>> benchmarkTable = parseFields(benchmarkStringArray);
 
-                // if everything is null(table DNE), create the table in the target DB
-                if (targetPK == null && targetTable.isEmpty()){
-                    System.out.println("Warning: Table name \"" + tableName + "\" does not exist in the target database.");
-                    ModifyTable.createTable(tableName, benchmarkPK, benchmarkTable, url, username, password);
+                // if table DNE in the target database, create the table in the target DB
+                if (targetPKs.isEmpty() && targetTable.isEmpty()){
+                    System.out.println("Warning: Table \"" + tableName + "\" is missing in the target database.");
+                    ModifyTable.createTable(tableName, benchmarkPKs, benchmarkTable, url, username, password);
                     System.out.println("Done checking table " + tableName + ".\n");
                     continue; // skip the mismatch table
                 }
 
                 // compare PK
-                comparePK(benchmarkPK, targetPK, tableName);
-                compareData(benchmarkTable, targetTable, tableName);
+                comparePK(benchmarkPKs, targetPKs, tableName, url, username, password);
+                compareData(benchmarkTable, targetTable, tableName, url, username, password);
                 System.out.println("Done checking table " + tableName + ".\n");
             }
         } catch (SQLException e) {
@@ -95,32 +105,57 @@ public class CompareData {
         }
     }
 
-    private static void compareData(Map<String, String> benchmarkTable, Map<String, String> targetTable, String tableName){
-        for (String key : benchmarkTable.keySet()) {
+    private static void compareData(Map<String, Map<String, Object>> benchmarkTable, Map<String, Map<String, Object>> targetTable, String tableName, String url, String username, String password){
+        for (String column : benchmarkTable.keySet()) {
 
-            // if both tables have the key
-            if (targetTable.containsKey(key)){
+        // gets all the information in case of modifying the column
+        String typeName = benchmarkTable.get(column).get("TYPE_NAME").toString();
+        String colSize = String.valueOf((Integer)benchmarkTable.get(column).get("COLUMN_SIZE"));
+        String decDigits = String.valueOf((Integer)benchmarkTable.get(column).get("DECIMAL_DIGITS"));
 
-                // if the key does not have the same value in two tables
-                if (!targetTable.get(key).equals(benchmarkTable.get(key))){
-                    System.out.println("Warning: Key \"" + key + "\" in the target databse does not match the type in the benchmark database in table \"" + tableName + "\".");
+            // if both tables have the column
+            if (targetTable.containsKey(column)){
+
+                // check if all detail information matches
+                for (String detailKey: benchmarkTable.get(column).keySet()) {
+
+                    // if targetTable also has the key (type name, column size, decimal digits)
+                    if (targetTable.get(column).containsKey(detailKey)) {
+
+                        // if value does not match
+                        if (!benchmarkTable.get(column).get(detailKey).equals(targetTable.get(column).get(detailKey))) {
+                            System.out.println("Warning: Column \"" + column + "\" in the target database mismatches the benchmark database in table \"" + tableName + "\".");
+                            ModifyTable.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
+                        }
+                    } else {
+                        System.out.println("Warning: Column \"" + column + "\" in the target databse has formatting error in table  \"" + tableName + "\".");
+                        ModifyTable.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
+                    }
                 }
             } else{
-                System.out.println("Warning: Key \"" + key + "\" is missing in the target table \"" + tableName + "\".");
+                System.out.println("Warning: Column \"" + column + "\" is missing in the target table \"" + tableName + "\".");
+                ModifyTable.addColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
             }
         }
-        for (String key : targetTable.keySet()) {
-            if (!benchmarkTable.containsKey(key)){
-                System.out.println("Warning: Key \"" + key + "\" is missing in the benchmark table \"" + tableName + "\".");
+        for (String column : targetTable.keySet()) {
+            
+            if (!benchmarkTable.containsKey(column)){
+                System.out.println("Warning: Column \"" + column + "\" does not exist in the benchmark table \"" + tableName + "\".");
+                ModifyTable.dropColumn(tableName, column, url, username, password);
             }
         }
     }
 
-    private static void comparePK(String PK1, String PK2, String tableName){
-        if (PK1.equals("null") && PK2 == null){
-            System.out.println("Warning: Primary Key does not exist in the benchmark or target dabase tables \"" + tableName + "\".");
-        } else if (!PK1.equalsIgnoreCase(PK2)){
-            System.out.println("Warning: Primary Key does not match between the benchmark and target dabase in table \"" + tableName + "\".");
+    private static void comparePK(HashSet<String> benchmarkPKs, HashSet<String> targetPKs, String tableName, String url, String username, String password) {
+        if (!(benchmarkPKs.size() == targetPKs.size() && benchmarkPKs.containsAll(targetPKs))) { // PKs do not match
+            System.out.println("Warning: Primary Key does not match between the two databases in table \"" + tableName + "\".");
+            if (benchmarkPKs.isEmpty()) { // if benchmarkPKs DNE
+                ModifyTable.dropPKs(tableName, url, username, password);
+            } else if (targetPKs.isEmpty()) { // if targetPKs DNE
+                ModifyTable.addPKs(tableName, benchmarkPKs, url, username, password);
+            } else{ // if PKs do not match
+                ModifyTable.modifyPKs(tableName, benchmarkPKs, url, username, password);
+            }
         }
     }
 
@@ -135,12 +170,32 @@ public class CompareData {
         }
     }
     
-    private static Map<String, String> parseFields(String[] fields) {
-        Map<String, String> fieldMap = new HashMap<>();
+    private static Map<String, Map<String, Object>> parseFields(String[] fields) {
+        final String eMsg = "Warning: benchmark database formatting error, unable to parse.";
+        Map<String, Map<String, Object>> fieldMap = new HashMap<>();
         for (String field : fields) {
-            String[] parts = field.split(":");
-            if (parts.length == 2) {
-                fieldMap.put(parts[0].trim(), parts[1].trim());
+            String[] parts = field.split(",");
+
+            //i.e. Column Name: UPDATETIME, it only takes "UPDATETIME"
+            String colName = parts[0].split(":")[1].trim();
+            if (parts.length == 4) {
+                Map<String, Object> detailMap = new HashMap<>();
+                for (int i = 1; i < 4; i++) {
+                    String[] detailParts = parts[i].split(":");
+                    if (detailParts.length == 2){
+                        try {
+                            int number = Integer.parseInt(detailParts[1].trim());
+                            detailMap.put(detailParts[0].trim(), number);
+                        } catch (NumberFormatException e) {
+                            detailMap.put(detailParts[0].trim(), detailParts[1].trim());
+                        }
+                    } else{
+                        System.out.println(eMsg);
+                    }
+                }
+            fieldMap.put(colName, detailMap);
+            } else{
+                System.out.println(eMsg);
             }
         }
         return fieldMap;

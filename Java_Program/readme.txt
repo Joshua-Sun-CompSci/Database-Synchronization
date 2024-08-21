@@ -11,4 +11,4 @@ password = "YourPassword"
 Steps to clean up:
 1. Go to terminal, cd to this folder, then type "make clean"
 
-Important Note: This project is still ongoing. More changes will be made to this program. I will also replace makefile with maven once I figure out how to write it.
+Note: I am learning how to use maven instead of makefile, but in the meanwhile, I will still use makefile for simplicity.   
