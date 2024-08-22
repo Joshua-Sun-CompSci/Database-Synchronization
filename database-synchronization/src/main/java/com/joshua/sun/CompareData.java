@@ -1,7 +1,18 @@
-import java.io.*;
-import java.nio.file.*;
-import java.sql.*;
-import java.util.*;
+package com.joshua.sun;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 public class CompareData {
     public static void main(String[] args) { 
@@ -46,7 +57,7 @@ public class CompareData {
             // split the String to different tables
             String[] benchmarkTables = benchmarkDatabase.split("\n[ \\t\\n]*\n");
             
-            List<String> tableNames = SaveData.loadTableNames("tables.txt");
+            List<String> tableNames = TableLoader.loadTableNames("tables.txt");
 
             // loop through each table
             for (int i = 0; i < tableNames.size(); i++) {

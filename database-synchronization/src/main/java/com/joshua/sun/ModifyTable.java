@@ -1,5 +1,11 @@
-import java.sql.*;
-import java.util.*;
+package com.joshua.sun;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Map;
 
 public class ModifyTable {
 

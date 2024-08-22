@@ -1,22 +1,30 @@
-import java.io.*;
-import java.sql.*;
-import java.util.*;
+package com.joshua.sun;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class SaveData {
-    public static void saveData(String saveAs, String url, String username, String password) {
+    public static void saveData(String fileName, String url, String username, String password) {
 
         // clears the output file first
-        clearFile(saveAs);
+        clearFile(fileName);
 
         // get all tables from tables.txt and put names into a list
-        List<String> tableNames = loadTableNames("tables.txt");
+        List<String> tableNames = TableLoader.loadTableNames("tables.txt");
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
 
             // loop through all tables
             for (String tableName : tableNames) {
                 Map<String, Map<String, Object>> table = FetchData.fetchTableStructure(connection, tableName);
                 HashSet<String> PKs = FetchData.fetchPrimaryKeys(connection, tableName);
-                saveTable(PKs, table, tableName, saveAs); // write table to saveAs
+                saveTable(PKs, table, tableName, fileName); // write table to fileName
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -33,9 +41,9 @@ public class SaveData {
         }
     }
 
-    // this write the content of the table to saveAs
-    private static void saveTable(HashSet<String> PKs, Map<String, Map<String, Object>> table, String tableName, String saveAs) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(saveAs, true))) {
+    // this write the content of the table to fileName
+    private static void saveTable(HashSet<String> PKs, Map<String, Map<String, Object>> table, String tableName, String fileName) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
             if (PKs.isEmpty() && table.isEmpty()) {
                 writer.write("Table DNE\n\n");
                 return;
@@ -64,24 +72,5 @@ public class SaveData {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    // this reads the file and returns a list of names in the table
-    public static List<String> loadTableNames(String fileName) {
-        List<String> tableNames = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-
-                // if the line doesn't start with "//", assume it is the table name
-                // we do this because we want to allow comments on tables.txt
-                if (!(line.charAt(0) == '/' && line.charAt(1) == '/')){
-                    tableNames.add(line);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return tableNames;
     }
 }

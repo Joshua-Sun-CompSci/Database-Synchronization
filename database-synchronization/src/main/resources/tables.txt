@@ -1,0 +1,11 @@
+// put all tables you want to compare down here
+// comments are allowed on this page and will not be used for comparison
+// DO NOT put empty lines between table names, it will cause error.
+JY_BASE_ACCOUNT
+JY_BASE_LOGIN_LOG
+JY_BASE_ORG
+JY_BASE_ORG_RESOURCES
+JY_BASE_PASS_INFO
+JY_BASE_RESOURCES
+JY_BASE_ROLE
+JY_BASE_ROLE_RESOURCES

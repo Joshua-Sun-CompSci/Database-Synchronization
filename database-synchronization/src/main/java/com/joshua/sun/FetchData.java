@@ -1,5 +1,12 @@
-import java.sql.*;
-import java.util.*;
+package com.joshua.sun;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 public class FetchData {
     // private static final String url = "jdbc:oracle:thin:@//20.0.0.239:1521/ORCL";
