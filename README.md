@@ -12,17 +12,18 @@ This is a Java-based tool to compare and synchronize tables between a benchmark 
 3. Navigate to the program directory:
    ```bash
    cd Database-Synchronization/Database-Synchronization-Oracle
+   ```
    or
    ```bash
    cd Database-Synchronization/Database-Synchronization-PostgreSQL
-4. Compile the program:
+   ```
+5. Compile the program:
    ```bash
    mvn clean package
-5. Run the program:
+6. Run the program:
    ```bash
    mvn exec:java
-6. Enter the information needed to connect to the benchmark/target databse. Format:
-
+7. Enter the information needed to connect to the benchmark/target databse. Format:
 url = "jdbc:oracle:thin:@//YourHost:YourPort/YourServiceName"(Oracle) or "jdbc:postgresql://hostname:port/dbname"(PostgreSQL)
 
 username = "YourUsername"
