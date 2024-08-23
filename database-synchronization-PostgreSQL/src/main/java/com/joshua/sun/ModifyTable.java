@@ -23,12 +23,12 @@ public class ModifyTable {
             String decDigits = String.valueOf((Integer)table.get(column).get("DECIMAL_DIGITS"));
             
             String columnStr = "";
-            if (typeName.equals("NUMBER")) {
+            if (typeName.equals("number")) {
                 columnStr = "\"" + column + "\" " + typeName + "(" + colSize + "," + decDigits + "),\n"; 
-            } else if (typeName.equals("CHAR")) {
+            } else if (typeName.equals("char")) {
                 columnStr = "\"" + column + "\" " + typeName + "(" + colSize + "),\n";
-            } else if (typeName.equals("VARCHAR2")) {
-                columnStr = "\"" + column + "\" " + typeName + "(" + colSize + " CHAR),\n";
+            } else if (typeName.equals("varchar")) {
+                columnStr = "\"" + column + "\" " + typeName + "(" + colSize + "),\n";
             } else{ // column is date, integer, etc.
                 columnStr = "\"" + column + "\" " + typeName + ",\n";
             }
@@ -42,9 +42,13 @@ public class ModifyTable {
                 PKString += "\"" + PK + "\",";
             }
             // this removes the last comma and finished the string
-            PKString = PKString.substring(0, PKString.length() - 1) + ")";
-            createTableSQL += PKString + "\n)";
+            PKString = PKString.substring(0, PKString.length() - 1) + ")\n";
+            createTableSQL += PKString;
+        } else {
+            // this removes ,\n to avoid error
+            createTableSQL = createTableSQL.substring(0, createTableSQL.length() - 2) + "\n";
         }
+        createTableSQL += ")";
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
             Statement stmt = conn.createStatement()) {
@@ -92,14 +96,14 @@ public class ModifyTable {
         System.out.println("Modifying column \"" + column + "\" for table \"" + tableName + "\"...");
 
         // write SQL code to modify a column
-        String modifyColumnSQL = "ALTER TABLE " + tableName + "\nMODIFY \"" + column + "\" " + typeName;
+        String modifyColumnSQL = "ALTER TABLE " + tableName + "\nALTER COLUMN \"" + column + "\" SET DATA TYPE " + typeName;
 
-        if (typeName.equals("NUMBER")) {
+        if (typeName.equals("number")) {
             modifyColumnSQL += "(" + colSize + "," + decDigits + ")"; 
-        } else if (typeName.equals("CHAR")) {
+        } else if (typeName.equals("char")) {
             modifyColumnSQL += "(" + colSize + ")";
-        } else if (typeName.equals("VARCHAR2")) {
-            modifyColumnSQL += "(" + colSize + " CHAR)";
+        } else if (typeName.equals("varchar")) {
+            modifyColumnSQL += "(" + colSize + ")";
         } 
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
@@ -121,14 +125,14 @@ public class ModifyTable {
         System.out.println("Adding column \"" + column + "\" for table \"" + tableName + "\"...");
 
         // write SQL code to add a column
-        String addColumnSQL = "ALTER TABLE " + tableName + "\nADD (\"" + column + "\" " + typeName;
+        String addColumnSQL = "ALTER TABLE " + tableName + "\nADD COLUMN (\"" + column + "\" " + typeName;
 
-        if (typeName.equals("NUMBER")) {
+        if (typeName.equals("number")) {
             addColumnSQL += "(" + colSize + "," + decDigits + "))"; 
-        } else if (typeName.equals("CHAR")) {
+        } else if (typeName.equals("char")) {
             addColumnSQL += "(" + colSize + "))";
-        } else if (typeName.equals("VARCHAR2")) {
-            addColumnSQL += "(" + colSize + " CHAR))";
+        } else if (typeName.equals("varchar")) {
+            addColumnSQL += "(" + colSize + "))";
         } else{ // column is date, integer, etc.
             addColumnSQL += ")";
         }
