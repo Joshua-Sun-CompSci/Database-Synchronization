@@ -25,8 +25,8 @@ This is a Java-based tool to compare and synchronize tables between a benchmark 
    ```bash
    mvn exec:java
 7. Enter the information needed to connect to the benchmark/target databse. Format:
-```
-url = "jdbc:oracle:thin:@//YourHost:YourPort/YourServiceName"(Oracle) or "jdbc:postgresql://hostname:port/dbname"(PostgreSQL)
+   ```
+   url = "jdbc:oracle:thin:@//YourHost:YourPort/YourServiceName"(Oracle) or "jdbc:postgresql://hostname:port/dbname"(PostgreSQL)
 username = "YourUsername"
 password = "YourPassword"
-```
+   ```
