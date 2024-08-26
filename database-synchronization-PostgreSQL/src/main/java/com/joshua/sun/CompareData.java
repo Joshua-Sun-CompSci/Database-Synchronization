@@ -12,50 +12,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 public class CompareData {
-    public static void main(String[] args) { 
-        // String url = "jdbc:postgresql://192.168.1.4:5432/benchmark";
-        // String username = "postgres";
-        // String password = "20041116";
-        // SaveData.saveData("benchmarkDatabase.txt", url, username, password);
-        // url = "jdbc:postgresql://192.168.1.4:5432/target";
-        // username = "postgres";
-        // password = "20041116";
+    public static void compareData(String url, String username, String password) { 
         
-        // // initialize them just incase of invalid input
-        String url = "";
-        String username = "";
-        String password = "";
-        try (Scanner myObj = new Scanner(System.in)) {
-
-            // loop twice to compare two data bases
-            for (int i = 0; i < 2; i++){
-                if (i == 0){
-                    System.out.println("Please enter the following information to connect to the benchmark database:");
-                } else{
-                    System.out.println("Please enter the following information to connect to the target database:");
-                }
-                System.out.println("Enter url: ");
-                url = myObj.nextLine();  // Read username input
-    
-                System.out.println("Enter your usernamename: ");
-                username = myObj.nextLine();
-    
-                System.out.println("Enter your password: ");
-                password = myObj.nextLine();
-                
-                // Save the first data to benchamarkDatabse.txt
-                if (i == 0){
-                    SaveData.saveData("benchmarkDatabase.txt", url, username, password);
-                }
-                System.out.println(); // prints \n for formatting
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // get the data from the target database
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
 

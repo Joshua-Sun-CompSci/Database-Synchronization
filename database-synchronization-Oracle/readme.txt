@@ -10,6 +10,3 @@ password = "YourPassword"
 
 Steps to clean up:
 1. Go to terminal, cd to this folder, then type "mvn clean"
-
-Possible future updates: 
-1. separate main file
