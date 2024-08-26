@@ -12,9 +12,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class CompareData {
     public static void compareData(String url, String username, String password) { 
+        Scanner scanner = new Scanner(System.in);
         
         // get the data from the target database
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
@@ -46,7 +48,12 @@ public class CompareData {
                     continue;
                 } else if (benchmarkString.equals("Table DNE")){ // else if table DNE in the benchmark database, delete the table from the target database
                     System.out.println("Warning: Table \"" + tableName + "\" does not exist in the benchmark database.");
-                    ModifyTable.dropTable(tableName, url, username, password);
+
+                    System.out.println("Do you want to drop this table in the target database? Y for yes and N for no.");
+                    String action = scanner.nextLine();
+                    if (action.equals("Y") || action.equals("y")) {ModifyTable.dropTable(tableName, url, username, password);}
+                    else if (!(action.equals("N") || action.equals("n"))) {System.out.println("Invalid input, no action done.");}
+
                     System.out.println("Done checking table " + tableName + ".\n");
                     continue;
                 }
@@ -69,7 +76,12 @@ public class CompareData {
                 // if table DNE in the target database, create the table in the target DB
                 if (targetPKs.isEmpty() && targetTable.isEmpty()){
                     System.out.println("Warning: Table \"" + tableName + "\" is missing in the target database.");
-                    ModifyTable.createTable(tableName, benchmarkPKs, benchmarkTable, url, username, password);
+
+                    System.out.println("Do you want to create this table in the target database? Y for yes and N for no.");
+                    String action = scanner.nextLine();
+                    if (action.equals("Y") || action.equals("y")) {ModifyTable.createTable(tableName, benchmarkPKs, benchmarkTable, url, username, password);}
+                    else if (!(action.equals("N") || action.equals("n"))) {System.out.println("Invalid input, no action done.");}
+
                     System.out.println("Done checking table " + tableName + ".\n");
                     continue; // skip the mismatch table
                 }
@@ -84,14 +96,16 @@ public class CompareData {
         }
     }
 
-    private static void compareData(Map<String, Map<String, Object>> benchmarkTable, Map<String, Map<String, Object>> targetTable, String tableName, String url, String username, String password){
+    private static void compareData(Map<String, Map<String, Object>> benchmarkTable, Map<String, Map<String, Object>> targetTable, String tableName, String url, String username, String password){  
+        Scanner scanner = new Scanner(System.in);
+
         for (String column : benchmarkTable.keySet()) {
 
-        // gets all the information in case of modifying the column
-        String typeName = benchmarkTable.get(column).get("TYPE_NAME").toString();
-        String colSize = String.valueOf((Integer)benchmarkTable.get(column).get("COLUMN_SIZE"));
-        String decDigits = String.valueOf((Integer)benchmarkTable.get(column).get("DECIMAL_DIGITS"));
-
+            // gets all the information in case of modifying the column
+            String typeName = benchmarkTable.get(column).get("TYPE_NAME").toString();
+            String colSize = String.valueOf((Integer)benchmarkTable.get(column).get("COLUMN_SIZE"));
+            String decDigits = String.valueOf((Integer)benchmarkTable.get(column).get("DECIMAL_DIGITS"));
+    
             // if both tables have the column
             if (targetTable.containsKey(column)){
 
@@ -104,37 +118,55 @@ public class CompareData {
                         // if value does not match
                         if (!benchmarkTable.get(column).get(detailKey).equals(targetTable.get(column).get(detailKey))) {
                             System.out.println("Warning: Column \"" + column + "\" in the target database mismatches the benchmark database in table \"" + tableName + "\".");
-                            ModifyTable.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
+                            System.out.println("Do you want to modify this column in the target database? Y for yes and N for no.");
+                            String action = scanner.nextLine();
+                            if (action.equals("Y") || action.equals("y")) {ModifyTable.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);}
+                            else if (!(action.equals("N") || action.equals("n"))) {System.out.println("Invalid input, no action done.");}
                         }
                     } else {
                         System.out.println("Warning: Column \"" + column + "\" in the target databse has formatting error in table  \"" + tableName + "\".");
-                        ModifyTable.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
+                        System.out.println("Do you want to modify this column in the target database? Y for yes and N for no.");
+                        String action = scanner.nextLine();
+                        if (action.equals("Y") || action.equals("y")) {ModifyTable.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);}
+                        else if (!(action.equals("N") || action.equals("n"))) {System.out.println("Invalid input, no action done.");}
                     }
                 }
             } else{
                 System.out.println("Warning: Column \"" + column + "\" is missing in the target table \"" + tableName + "\".");
-                ModifyTable.addColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
+                System.out.println("Do you want to add this column to the target database? Y for yes and N for no.");
+                String action = scanner.nextLine();
+                if (action.equals("Y") || action.equals("y")) {ModifyTable.addColumn(tableName, column, typeName, colSize, decDigits, url, username, password);}
+                else if (!(action.equals("N") || action.equals("n"))) {System.out.println("Invalid input, no action done.");}
             }
         }
         for (String column : targetTable.keySet()) {
             
             if (!benchmarkTable.containsKey(column)){
                 System.out.println("Warning: Column \"" + column + "\" does not exist in the benchmark table \"" + tableName + "\".");
-                ModifyTable.dropColumn(tableName, column, url, username, password);
+                System.out.println("Do you want to drop this column from the target database? Y for yes and N for no.");
+                String action = scanner.nextLine();
+                if (action.equals("Y") || action.equals("y")) {ModifyTable.dropColumn(tableName, column, url, username, password);}
+                else if (!(action.equals("N") || action.equals("n"))) {System.out.println("Invalid input, no action done.");}
             }
         }
     }
 
     private static void comparePK(HashSet<String> benchmarkPKs, HashSet<String> targetPKs, String tableName, String url, String username, String password) {
+        Scanner scanner = new Scanner(System.in);
         if (!(benchmarkPKs.size() == targetPKs.size() && benchmarkPKs.containsAll(targetPKs))) { // PKs do not match
             System.out.println("Warning: Primary Key does not match between the two databases in table \"" + tableName + "\".");
-            if (benchmarkPKs.isEmpty()) { // if benchmarkPKs DNE
-                ModifyTable.dropPKs(tableName, url, username, password);
-            } else if (targetPKs.isEmpty()) { // if targetPKs DNE
-                ModifyTable.addPKs(tableName, benchmarkPKs, url, username, password);
-            } else{ // if PKs do not match
-                ModifyTable.modifyPKs(tableName, benchmarkPKs, url, username, password);
+            System.out.println("Do you want to synchronize the primary key(s)? Y for yes and N for no.");
+            String action = scanner.nextLine();
+            if (action.equals("Y") || action.equals("y")) {
+                if (benchmarkPKs.isEmpty()) { // if benchmarkPKs DNE
+                    ModifyTable.dropPKs(tableName, url, username, password);
+                } else if (targetPKs.isEmpty()) { // if targetPKs DNE
+                    ModifyTable.addPKs(tableName, benchmarkPKs, url, username, password);
+                } else{ // if PKs do not match
+                    ModifyTable.modifyPKs(tableName, benchmarkPKs, url, username, password);
+                }
             }
+            else if (!(action.equals("N") || action.equals("n"))) {System.out.println("Invalid input, no action done.");}
         }
     }
 
