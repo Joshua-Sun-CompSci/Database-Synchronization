@@ -24,14 +24,12 @@ This is a Java-based tool to compare and synchronize tables between a benchmark 
 5. Add the tables you want to synchronize to table.txt:
    ```bash
    vi table.txt
-   ```
-   Or do it manually by using Apps like Notepad
 6. Compile the program:
    ```bash
    mvn clean package
-7. Run the program:
+7. Run the program (change "en" to "zh" or simply remove it to run the program in Chinese):
    ```bash
-   mvn exec:java
+   java -jar .\target\database-synchronization-1.0-SNAPSHOT.jar en
 8. Enter the information needed to connect to the benchmark/target databse. Format:
    ```
    url = "jdbc:oracle:thin:@//YourHost:YourPort/YourServiceName"(Oracle) or "jdbc:postgresql://hostname:port/dbname"(PostgreSQL)
