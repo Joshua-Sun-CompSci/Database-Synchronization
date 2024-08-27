@@ -1,4 +1,4 @@
-package com.joshua.sun;
+package com.joshua.sun.english;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Map;
 
-public class ModifyTable {
+public class ModifyTableEn {
 
     // the methods below modifies the whole table
     public static void createTable(String tableName, HashSet<String> PKs, Map<String, Map<String, Object>> table, String url, String username, String password) {
@@ -23,12 +23,12 @@ public class ModifyTable {
             String decDigits = String.valueOf((Integer)table.get(column).get("DECIMAL_DIGITS"));
             
             String columnStr = "";
-            if (typeName.equals("number")) {
+            if (typeName.equals("NUMBER")) {
                 columnStr = "\"" + column + "\" " + typeName + "(" + colSize + "," + decDigits + "),\n"; 
-            } else if (typeName.equals("char")) {
+            } else if (typeName.equals("CHAR")) {
                 columnStr = "\"" + column + "\" " + typeName + "(" + colSize + "),\n";
-            } else if (typeName.equals("varchar")) {
-                columnStr = "\"" + column + "\" " + typeName + "(" + colSize + "),\n";
+            } else if (typeName.equals("VARCHAR2")) {
+                columnStr = "\"" + column + "\" " + typeName + "(" + colSize + " CHAR),\n";
             } else{ // column is date, integer, etc.
                 columnStr = "\"" + column + "\" " + typeName + ",\n";
             }
@@ -96,14 +96,14 @@ public class ModifyTable {
         System.out.println("Modifying column \"" + column + "\" for table \"" + tableName + "\"...");
 
         // write SQL code to modify a column
-        String modifyColumnSQL = "ALTER TABLE " + tableName + "\nALTER COLUMN \"" + column + "\" SET DATA TYPE " + typeName;
+        String modifyColumnSQL = "ALTER TABLE " + tableName + "\nMODIFY \"" + column + "\" " + typeName;
 
-        if (typeName.equals("number")) {
+        if (typeName.equals("NUMBER")) {
             modifyColumnSQL += "(" + colSize + "," + decDigits + ")"; 
-        } else if (typeName.equals("char")) {
+        } else if (typeName.equals("CHAR")) {
             modifyColumnSQL += "(" + colSize + ")";
-        } else if (typeName.equals("varchar")) {
-            modifyColumnSQL += "(" + colSize + ")";
+        } else if (typeName.equals("VARCHAR2")) {
+            modifyColumnSQL += "(" + colSize + " CHAR)";
         } 
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
@@ -125,14 +125,14 @@ public class ModifyTable {
         System.out.println("Adding column \"" + column + "\" for table \"" + tableName + "\"...");
 
         // write SQL code to add a column
-        String addColumnSQL = "ALTER TABLE " + tableName + "\nADD COLUMN (\"" + column + "\" " + typeName;
+        String addColumnSQL = "ALTER TABLE " + tableName + "\nADD (\"" + column + "\" " + typeName;
 
-        if (typeName.equals("number")) {
+        if (typeName.equals("NUMBER")) {
             addColumnSQL += "(" + colSize + "," + decDigits + "))"; 
-        } else if (typeName.equals("char")) {
+        } else if (typeName.equals("CHAR")) {
             addColumnSQL += "(" + colSize + "))";
-        } else if (typeName.equals("varchar")) {
-            addColumnSQL += "(" + colSize + "))";
+        } else if (typeName.equals("VARCHAR2")) {
+            addColumnSQL += "(" + colSize + " CHAR))";
         } else{ // column is date, integer, etc.
             addColumnSQL += ")";
         }

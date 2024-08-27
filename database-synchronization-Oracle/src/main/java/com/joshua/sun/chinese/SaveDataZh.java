@@ -1,4 +1,4 @@
-package com.joshua.sun;
+package com.joshua.sun.chinese;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -10,62 +10,62 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public class SaveData {
+public class SaveDataZh {
     public static void saveData(String fileName, String url, String username, String password) {
 
-        // clears the output file first
+        // 首先清空输出文件
         clearFile(fileName);
 
-        // get all tables from tables.txt and put names into a list
-        List<String> tableNames = TableLoader.loadTableNames("tables.txt");
+        // 从 tables.txt 中获取所有表名并将其放入列表
+        List<String> tableNames = TableLoaderZh.loadTableNames("tables.txt");
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
 
-            // loop through all tables
+            // 遍历所有表
             for (String tableName : tableNames) {
-                Map<String, Map<String, Object>> table = FetchData.fetchTableStructure(connection, tableName);
-                HashSet<String> PKs = FetchData.fetchPrimaryKeys(connection, tableName);
-                saveTable(PKs, table, tableName, fileName); // write table to fileName
+                Map<String, Map<String, Object>> table = FetchDataZh.fetchTableStructure(connection, tableName);
+                HashSet<String> PKs = FetchDataZh.fetchPrimaryKeys(connection, tableName);
+                saveTable(PKs, table, tableName, fileName); // 将表写入 fileName
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // this clears the file
+    // 清空文件
     private static void clearFile(String fileName) {
-        // The file is cleared by opening in write mode without append
-        // Writing an empty string effectively clears the file content
+        // 通过以写入模式打开文件并不追加内容来清空文件
+        // 写入一个空字符串有效地清除文件内容
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false))) {
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // this write the content of the table to fileName
+    // 将表的内容写入 fileName
     private static void saveTable(HashSet<String> PKs, Map<String, Map<String, Object>> table, String tableName, String fileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
             if (PKs.isEmpty() && table.isEmpty()) {
-                writer.write("Table DNE\n\n");
+                writer.write("表名称不存在\n\n");
                 return;
             } else {
-                writer.write("Table Name: " + tableName + "\n");
+                writer.write("表名称: " + tableName + "\n");
             }
 
-            // starts to write all PKs to file
-            writer.write("Primary Key(s): ");
+            // 开始将所有主键写入文件
+            writer.write("主键: ");
             for (String PK: PKs){
                 writer.write(PK + " ");
             }
-            writer.write("\n"); // done writing all PKs
+            writer.write("\n"); // 完成写入所有主键
             
-            // starts to write details to file
+            // 开始将详细信息写入文件
             for (Map.Entry<String, Map<String, Object>> columnEntry : table.entrySet()) {
                 String name = columnEntry.getKey();
                 Map<String, Object> details = columnEntry.getValue();
-                writer.write("COLUMN_NAME: " + name + ", ");
-                writer.write("TYPE_NAME: " + details.get("TYPE_NAME") + ", ");
-                writer.write("COLUMN_SIZE: " + details.get("COLUMN_SIZE") + ", ");
-                writer.write("DECIMAL_DIGITS: " + details.get("DECIMAL_DIGITS") + "\n");
+                writer.write("列名: " + name + ", ");
+                writer.write("数据类型: " + details.get("数据类型") + ", ");
+                writer.write("列大小: " + details.get("列大小") + ", ");
+                writer.write("小数位数: " + details.get("小数位数") + "\n");
             }
             writer.write("\n");
             writer.close();
