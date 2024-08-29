@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SaveDataZh {
-    public static void saveData(String fileName, String url, String username, String password) {
-
+    public static Boolean saveData(String fileName, String url, String username, String password) {
+        Boolean success = true;
         // 首先清空输出文件
         clearFile(fileName);
 
@@ -28,7 +28,9 @@ public class SaveDataZh {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            success = false;
         }
+        return success;
     }
 
     // 清空文件

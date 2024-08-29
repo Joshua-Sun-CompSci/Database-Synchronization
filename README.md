@@ -18,19 +18,14 @@ This is a Java-based tool to compare and synchronize tables between a benchmark 
    ```bash
    cd Database-Synchronization/Database-Synchronization-PostgreSQL
    ```
-4. Navigate to the resources folder:
+4. Navigate to the resources folder and add the tables you want to synchronize to table.txt located at:
    ```bash
-   cd src/main/resources
-5. Add the tables you want to synchronize to table.txt:
-   ```bash
-   vi table.txt
-6. Compile the program:
+   src/main/resources/table.txt
+5. Compile the program:
    ```bash
    mvn clean package
-7. Run the program (change "en" to "zh" or simply remove it to run the program in Chinese):
-   ```bash
-   java -jar .\target\database-synchronization-1.0-SNAPSHOT.jar en
-8. Enter the information needed to connect to the benchmark/target databse. Format:
+6. Run the program using your IDE. Add "en" to the end of the running command if you wish to run in English. 
+7. Enter the information needed to connect to the benchmark/target databse. Format:
    ```
    url = "jdbc:oracle:thin:@//YourHost:YourPort/YourServiceName"(Oracle) or "jdbc:postgresql://hostname:port/dbname"(PostgreSQL)
    username = "YourUsername"

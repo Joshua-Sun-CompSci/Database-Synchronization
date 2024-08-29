@@ -96,7 +96,7 @@ public class ModifyTableZh {
         System.out.println("正在修改表 \"" + tableName + "\" 的列 \"" + column + "\"...");
 
         // 编写修改列的 SQL 代码
-        String modifyColumnSQL = "ALTER TABLE " + tableName + "\nALTER COLUMN \"" + column + "\" SET DATA TYPE " + typeName;
+        String modifyColumnSQL = "ALTER TABLE \"" + tableName + "\"\nALTER COLUMN \"" + column + "\" SET DATA TYPE " + typeName;
 
         if (typeName.equals("number")) {
             modifyColumnSQL += "(" + colSize + "," + decDigits + ")"; 
@@ -125,7 +125,7 @@ public class ModifyTableZh {
         System.out.println("正在向表 \"" + tableName + "\" 添加列 \"" + column + "\"...");
 
         // 编写添加列的 SQL 代码
-        String addColumnSQL = "ALTER TABLE " + tableName + "\nADD COLUMN (\"" + column + "\" " + typeName;
+        String addColumnSQL = "ALTER TABLE \"" + tableName + "\"\nADD COLUMN (\"" + column + "\" " + typeName;
 
         if (typeName.equals("number")) {
             addColumnSQL += "(" + colSize + "," + decDigits + "))"; 
@@ -156,7 +156,7 @@ public class ModifyTableZh {
         System.out.println("正在从表 \"" + tableName + "\" 删除列 \"" + column + "\"...");
 
         // 编写删除列的 SQL 代码
-        String dropColumnSQL = "ALTER TABLE "  + tableName + "\nDROP COLUMN \"" + column + "\"";
+        String dropColumnSQL = "ALTER TABLE \"" + tableName + "\"\nDROP COLUMN \"" + column + "\"";
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
             Statement stmt = conn.createStatement()) {
@@ -191,7 +191,7 @@ public class ModifyTableZh {
         System.out.println("正在为表 \"" + tableName + "\" 添加主键...");
 
         // 编写添加主键的 SQL 代码
-        String addPKsSQL = "ALTER TABLE "  + tableName + "\nADD CONSTRAINT " + tableName + "_PK PRIMARY KEY (";
+        String addPKsSQL = "ALTER TABLE \"" + tableName + "\"\nADD CONSTRAINT " + tableName + "_PK PRIMARY KEY (";
 
         // 将所有主键添加到 SQL 代码中
         for (String PK: PKs) {
@@ -220,7 +220,7 @@ public class ModifyTableZh {
         System.out.println("正在删除表 \"" + tableName + "\" 的主键...");
 
         // 编写删除主键的 SQL 代码
-        String dropPKsSQL = "ALTER TABLE "  + tableName + "\nDROP CONSTRAINT " + tableName + "_PK";
+        String dropPKsSQL = "ALTER TABLE \"" + tableName + "\"\nDROP CONSTRAINT " + tableName + "_PK";
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
             Statement stmt = conn.createStatement()) {

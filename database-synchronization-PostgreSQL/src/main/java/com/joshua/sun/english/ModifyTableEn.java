@@ -96,7 +96,7 @@ public class ModifyTableEn {
         System.out.println("Modifying column \"" + column + "\" for table \"" + tableName + "\"...");
 
         // write SQL code to modify a column
-        String modifyColumnSQL = "ALTER TABLE " + tableName + "\nALTER COLUMN \"" + column + "\" SET DATA TYPE " + typeName;
+        String modifyColumnSQL = "ALTER TABLE \"" + tableName + "\"\nALTER COLUMN \"" + column + "\" SET DATA TYPE " + typeName;
 
         if (typeName.equals("number")) {
             modifyColumnSQL += "(" + colSize + "," + decDigits + ")"; 
@@ -125,7 +125,7 @@ public class ModifyTableEn {
         System.out.println("Adding column \"" + column + "\" for table \"" + tableName + "\"...");
 
         // write SQL code to add a column
-        String addColumnSQL = "ALTER TABLE " + tableName + "\nADD COLUMN (\"" + column + "\" " + typeName;
+        String addColumnSQL = "ALTER TABLE \"" + tableName + "\"\nADD COLUMN (\"" + column + "\" " + typeName;
 
         if (typeName.equals("number")) {
             addColumnSQL += "(" + colSize + "," + decDigits + "))"; 
@@ -156,7 +156,7 @@ public class ModifyTableEn {
         System.out.println("Dropping column \"" + column + "\" for table \"" + tableName + "\"...");
 
         // write SQL code to drop a column
-        String dropColumnSQL = "ALTER TABLE "  + tableName + "\nDROP COLUMN \"" + column + "\"";
+        String dropColumnSQL = "ALTER TABLE \"" + tableName + "\"\nDROP COLUMN \"" + column + "\"";
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
             Statement stmt = conn.createStatement()) {
@@ -191,7 +191,7 @@ public class ModifyTableEn {
         System.out.println("Adding the primary key(s) for table \"" + tableName + "\"...");
 
         // write SQL code to add PKs
-        String addPKsSQL = "ALTER TABLE "  + tableName + "\nADD CONSTRAINT " + tableName + "_PK PRIMARY KEY (";
+        String addPKsSQL = "ALTER TABLE \"" + tableName + "\"\nADD CONSTRAINT " + tableName + "_PK PRIMARY KEY (";
 
         // this adds all PKs to the SQL code
         for (String PK: PKs) {
@@ -220,7 +220,7 @@ public class ModifyTableEn {
         System.out.println("Dropping the primary key(s) for table \"" + tableName + "\"...");
 
         // write SQL code to drop PKs
-        String dropPKsSQL = "ALTER TABLE "  + tableName + "\nDROP CONSTRAINT " + tableName + "_PK";
+        String dropPKsSQL = "ALTER TABLE \"" + tableName + "\"\nDROP CONSTRAINT " + tableName + "_PK";
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
             Statement stmt = conn.createStatement()) {

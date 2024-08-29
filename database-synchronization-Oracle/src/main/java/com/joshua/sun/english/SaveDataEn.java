@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SaveDataEn {
-    public static void saveData(String fileName, String url, String username, String password) {
-
+    public static Boolean saveData(String fileName, String url, String username, String password) {
+        Boolean success = true;
         // clears the output file first
         clearFile(fileName);
 
@@ -28,7 +28,9 @@ public class SaveDataEn {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            success = false;
         }
+        return success;
     }
 
     // this clears the file

@@ -82,16 +82,6 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
-
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <configuration>
-                <mainClass>com.joshua.sun.Main</mainClass>
-            </configuration>
-        </plugin>
-
       </plugins>
     </pluginManagement>
   </build>
