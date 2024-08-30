@@ -64,9 +64,9 @@ public class CompareDataZh {
                 String benchmarkPKString = benchmarkArray[1];
                 String[] benchmarkPKArray = benchmarkPKString.split("\\s+");
 
-                // 过滤出 "Primary Keys: " 并仅保存其后的内容
+                // 过滤出 "主键" 并仅保存其后的内容
                 HashSet<String> benchmarkPKs = new HashSet<>();
-                for (int j = 2; j < benchmarkPKArray.length; j++) {
+                for (int j = 1; j < benchmarkPKArray.length; j++) {
                     String key = benchmarkPKArray[j].trim();
                     benchmarkPKs.add(key);
                 }
@@ -158,9 +158,9 @@ public class CompareDataZh {
         for (String column : benchmarkTable.keySet()) {
 
             // 获取修改列时的所有信息
-            String typeName = benchmarkTable.get(column).get("TYPE_NAME").toString();
-            String colSize = String.valueOf((Integer)benchmarkTable.get(column).get("COLUMN_SIZE"));
-            String decDigits = String.valueOf((Integer)benchmarkTable.get(column).get("DECIMAL_DIGITS"));
+            String typeName = benchmarkTable.get(column).get("数据类型").toString();
+            String colSize = String.valueOf((Integer)benchmarkTable.get(column).get("列大小"));
+            String decDigits = String.valueOf((Integer)benchmarkTable.get(column).get("小数位数"));
 
             // 如果两个表都有此列
             if (targetTable.containsKey(column)){
@@ -200,14 +200,16 @@ public class CompareDataZh {
 
     private static void comparePK(HashSet<String> benchmarkPKs, HashSet<String> targetPKs, String tableName, String url, String username, String password, ArrayList<String> commands) {
         Scanner scanner = new Scanner(System.in);
+        Boolean updatePKs = false;
     
         // 首先打印警告（如果适用）
         if (!(benchmarkPKs.size() == targetPKs.size() && benchmarkPKs.containsAll(targetPKs))) { // 主键不匹配
             System.out.println("警告: 表 \"" + tableName + "\" 中的主键在两个数据库之间不匹配。");
+            updatePKs = true;
         }
         System.out.println("完成检查表 \"" + tableName + "\"。\n");
     
-        if (!commands.isEmpty()) {
+        if (!commands.isEmpty() || updatePKs) {
             String choice = "";
             if (syncAll) {
                 choice = "YES";
@@ -225,16 +227,15 @@ public class CompareDataZh {
                     System.out.println("正在同步表 \"" + tableName + "\"...");
     
                     // 更新列
-                    executeCommands(commands, tableName, url, username, password);
+                    if (!commands.isEmpty()) {
+                        executeCommands(commands, tableName, url, username, password);
+                    }
     
                     // 更新主键
-                    if (benchmarkPKs.isEmpty()) { // 如果 benchmarkPKs 不存在
-                        ModifyTableZh.dropPKs(tableName, url, username, password);
-                    } else if (targetPKs.isEmpty()) { // 如果 targetPKs 不存在
-                        ModifyTableZh.addPKs(tableName, benchmarkPKs, url, username, password);
-                    } else { // 如果主键不匹配
-                        ModifyTableZh.modifyPKs(tableName, benchmarkPKs, url, username, password);
+                    if (updatePKs){
+                        syncPKs(benchmarkPKs, targetPKs, tableName, url, username, password);
                     }
+
                     System.out.println("同步完成。\n");
                     break;
     
@@ -251,16 +252,15 @@ public class CompareDataZh {
                         System.out.println("正在同步表 \"" + tableName + "\"...");
     
                         // 更新列
-                        executeCommands(commands, tableName, url, username, password);
-    
-                        // 更新主键
-                        if (benchmarkPKs.isEmpty()) { // 如果 benchmarkPKs 不存在
-                            ModifyTableZh.dropPKs(tableName, url, username, password);
-                        } else if (targetPKs.isEmpty()) { // 如果 targetPKs 不存在
-                            ModifyTableZh.addPKs(tableName, benchmarkPKs, url, username, password);
-                        } else { // 如果主键不匹配
-                            ModifyTableZh.modifyPKs(tableName, benchmarkPKs, url, username, password);
+                        if (!commands.isEmpty()) {
+                            executeCommands(commands, tableName, url, username, password);
                         }
+        
+                        // 更新主键
+                        if (updatePKs){
+                            syncPKs(benchmarkPKs, targetPKs, tableName, url, username, password);
+                        }
+
                         System.out.println("同步完成。\n");
                         break;
                     } else if (confirm.equals("N")) {
@@ -303,6 +303,16 @@ public class CompareDataZh {
                     ModifyTableZh.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
                 }
             }
+        }
+    }
+
+    private static void syncPKs(HashSet<String> benchmarkPKs, HashSet<String> targetPKs, String tableName, String url, String username, String password) {
+        if (benchmarkPKs.isEmpty()) { // 如果 benchmarkPKs 不存在
+            ModifyTableZh.dropPKs(tableName, url, username, password);
+        } else if (targetPKs.isEmpty()) { // 如果 targetPKs 不存在
+            ModifyTableZh.addPKs(tableName, benchmarkPKs, url, username, password);
+        } else { // 如果主键不匹配
+            ModifyTableZh.modifyPKs(tableName, benchmarkPKs, url, username, password);
         }
     }
 

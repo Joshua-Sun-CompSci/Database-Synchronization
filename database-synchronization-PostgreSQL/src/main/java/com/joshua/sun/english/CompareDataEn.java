@@ -200,14 +200,16 @@ public class CompareDataEn {
 
     private static void comparePK(HashSet<String> benchmarkPKs, HashSet<String> targetPKs, String tableName, String url, String username, String password, ArrayList<String> commands) {
         Scanner scanner = new Scanner(System.in);
+        Boolean updatePKs = false;
 
         // prints out the warning first (if applicable)
         if (!(benchmarkPKs.size() == targetPKs.size() && benchmarkPKs.containsAll(targetPKs))) { // PKs do not match
             System.out.println("Warning: Primary Key does not match between the two databases in table \"" + tableName + "\".");
+            updatePKs = true;
         }
         System.out.println("Done checking table \"" + tableName + "\".\n");
 
-        if (!commands.isEmpty()) {
+        if (!commands.isEmpty() || updatePKs) {
             String choice = "";
                 if (syncAll) {
                     choice = "YES";
@@ -225,16 +227,15 @@ public class CompareDataEn {
                     System.out.println("Synchronizing table \"" + tableName + "\"...");
 
                     // update columns
-                    executeCommands(commands, tableName, url, username, password);
-
-                    // updates pks
-                    if (benchmarkPKs.isEmpty()) { // if benchmarkPKs DNE
-                        ModifyTableEn.dropPKs(tableName, url, username, password);
-                    } else if (targetPKs.isEmpty()) { // if targetPKs DNE
-                        ModifyTableEn.addPKs(tableName, benchmarkPKs, url, username, password);
-                    } else{ // if PKs do not match
-                        ModifyTableEn.modifyPKs(tableName, benchmarkPKs, url, username, password);
+                    if (!commands.isEmpty()) {
+                        executeCommands(commands, tableName, url, username, password);
                     }
+    
+                    // update PKs
+                    if (updatePKs){
+                        syncPKs(benchmarkPKs, targetPKs, tableName, url, username, password);
+                    }
+
                     System.out.println("Done synchronizing.\n");
                     break;
 
@@ -251,16 +252,15 @@ public class CompareDataEn {
                         System.out.println("Synchronizing table \"" + tableName + "\"...");
 
                         // update columns
-                        executeCommands(commands, tableName, url, username, password);
-
-                        // updates pks
-                        if (benchmarkPKs.isEmpty()) { // if benchmarkPKs DNE
-                            ModifyTableEn.dropPKs(tableName, url, username, password);
-                        } else if (targetPKs.isEmpty()) { // if targetPKs DNE
-                            ModifyTableEn.addPKs(tableName, benchmarkPKs, url, username, password);
-                        } else{ // if PKs do not match
-                            ModifyTableEn.modifyPKs(tableName, benchmarkPKs, url, username, password);
+                        if (!commands.isEmpty()) {
+                            executeCommands(commands, tableName, url, username, password);
                         }
+        
+                        // update PKs
+                        if (updatePKs){
+                            syncPKs(benchmarkPKs, targetPKs, tableName, url, username, password);
+                        }
+
                         System.out.println("Done synchronizing.\n");
                         break;
                     } else if (confirm.equals("N")) {
@@ -303,6 +303,16 @@ public class CompareDataEn {
                     ModifyTableEn.modifyColumn(tableName, column, typeName, colSize, decDigits, url, username, password);
                 }
             }
+        }
+    }
+
+    private static void syncPKs(HashSet<String> benchmarkPKs, HashSet<String> targetPKs, String tableName, String url, String username, String password) {
+        if (benchmarkPKs.isEmpty()) { // if benchmarkPKs DNE
+            ModifyTableEn.dropPKs(tableName, url, username, password);
+        } else if (targetPKs.isEmpty()) { // if targetPKs DNE
+            ModifyTableEn.addPKs(tableName, benchmarkPKs, url, username, password);
+        } else { // if PKs don't match
+            ModifyTableEn.modifyPKs(tableName, benchmarkPKs, url, username, password);
         }
     }
 
